@@ -9,6 +9,7 @@ import { Textarea } from '../components/ui/textarea'
 import { Checkbox } from '../components/ui/checkbox'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import io from 'socket.io-client'
 
 type WorkItem = {
   id: string
@@ -24,6 +25,21 @@ export default function Home() {
 
   useEffect(() => {
     fetchWorkItems()
+    
+    // 连接 WebSocket
+    const socket = io()
+    
+    // 初始化 WebSocket
+    fetch('/api/socketio').finally(() => {
+      // 监听工作项目更新
+      socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
+        setWorkItems(updatedWorkItems)
+      })
+    })
+
+    return () => {
+      socket.disconnect()
+    }
   }, [])
 
   const fetchWorkItems = async () => {
@@ -45,8 +61,8 @@ export default function Home() {
         }),
       })
       const newItem = await response.json()
-      setWorkItems([...workItems, newItem])
       setNewWorkContent('')
+      // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
     }
   }
 
@@ -62,11 +78,7 @@ export default function Home() {
           completed: !item.completed,
         }),
       })
-      if (response.ok) {
-        setWorkItems(workItems.map(item =>
-          item.id === id ? { ...item, completed: !item.completed } : item
-        ))
-      }
+      // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
     }
   }
 

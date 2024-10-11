@@ -63,8 +63,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       res.status(200).json({ message: 'Item updated successfully' });
+    } else if (req.method === 'DELETE') {
+      const { id } = req.query;
+      
+      if (typeof id !== 'string') {
+        return res.status(400).json({ error: '无效的任务ID' });
+      }
+
+      const workItems = await kvClient.get<WorkItem[]>('workItems') || [];
+      const updatedItems = workItems.filter(item => item.id !== id);
+      
+      if (workItems.length === updatedItems.length) {
+        return res.status(404).json({ error: '未找到指定任务' });
+      }
+
+      await kvClient.set('workItems', updatedItems);
+      
+      // 通知所有客户端更新
+      const io: SocketIOServer = (res.socket as any).server.io;
+      if (io) {
+        io.emit('workItemsUpdated', updatedItems);
+      }
+      
+      res.status(200).json({ message: '任务已成功删除' });
     } else {
-      res.setHeader('Allow', ['GET', 'POST', 'PUT']);
+      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error: unknown) {

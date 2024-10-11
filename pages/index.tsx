@@ -10,6 +10,7 @@ import { Checkbox } from '../components/ui/checkbox'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import io from 'socket.io-client'
+import { FiTrash2 } from 'react-icons/fi'  // 导入删除图标
 
 type WorkItem = {
   id: string
@@ -79,6 +80,18 @@ export default function Home() {
         }),
       })
       // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
+    }
+  }
+
+  const deleteWorkItem = async (id: string) => {
+    const response = await fetch(`/api/workItems?id=${id}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
+      console.log('任务已成功删除');
+    } else {
+      console.error('删除任务失败');
     }
   }
 
@@ -160,6 +173,14 @@ export default function Home() {
               >
                 {item.content}
               </label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteWorkItem(item.id)}
+                className="p-1 hover:bg-red-100"
+              >
+                <FiTrash2 className="text-red-500" />
+              </Button>
             </div>
           ))}
         </div>

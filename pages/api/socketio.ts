@@ -16,11 +16,12 @@ interface NextApiResponseWithSocket extends NextApiResponse {
 }
 
 const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
-  if (res.socket.server.io) {
-    console.log('Socket is already running')
-  } else {
+  if (!res.socket.server.io) {
     console.log('Socket is initializing')
-    const io = new SocketIOServer(res.socket.server as any)
+    const io = new SocketIOServer(res.socket.server as any, {
+      path: '/api/socketio',
+      addTrailingSlash: false,
+    })
     res.socket.server.io = io
 
     io.on('connection', socket => {
@@ -31,7 +32,14 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
       })
     })
   }
-  res.end()
+
+  res.status(200).json({ message: 'Socket server is running' })
+}
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 }
 
 export default SocketHandler

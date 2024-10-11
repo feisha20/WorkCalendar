@@ -89,7 +89,9 @@ export default function Home() {
     fetchWorkItems()
     
     // 连接 WebSocket
-    const socket = io()
+    const socket = io({
+      path: '/api/socketio',
+    })
     
     // 初始化 WebSocket
     fetch('/api/socketio').finally(() => {

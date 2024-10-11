@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input'
 import { Textarea } from '../components/ui/textarea'
 import { Checkbox } from '../components/ui/checkbox'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 
 type WorkItem = {
   id: string
@@ -76,14 +77,14 @@ export default function Home() {
     const weekEnd = endOfWeek(selectedDate)
     const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
-    let report = `Weekly Report (${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')})\n\n`
+    let report = `周报 (${format(weekStart, 'MMM d', { locale: zhCN })} - ${format(weekEnd, 'MMM d, yyyy', { locale: zhCN })})\n\n`
 
     daysInWeek.forEach(day => {
       const dayItems = workItems.filter(item => format(parseISO(item.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
       if (dayItems.length > 0) {
-        report += `${format(day, 'EEEE, MMM d')}:\n`
+        report += `${format(day, 'EEEE, MMM d', { locale: zhCN })}:\n`
         dayItems.forEach(item => {
-          report += `- [${item.completed ? 'x' : ' '}] ${item.content}\n`
+          report += `- [${item.completed ? '✓' : ' '}] ${item.content}\n`
         })
         report += '\n'
       }
@@ -99,14 +100,14 @@ export default function Home() {
     const monthEnd = endOfMonth(selectedDate)
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
-    let report = `Monthly Report (${format(monthStart, 'MMMM yyyy')})\n\n`
+    let report = `月报 (${format(monthStart, 'yyyy年MM月', { locale: zhCN })})\n\n`
 
     daysInMonth.forEach(day => {
       const dayItems = workItems.filter(item => format(parseISO(item.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
       if (dayItems.length > 0) {
-        report += `${format(day, 'MMMM d')}:\n`
+        report += `${format(day, 'MM月dd日', { locale: zhCN })}:\n`
         dayItems.forEach(item => {
-          report += `- [${item.completed ? 'x' : ' '}] ${item.content}\n`
+          report += `- [${item.completed ? '✓' : ' '}] ${item.content}\n`
         })
         report += '\n'
       }
@@ -123,7 +124,7 @@ export default function Home() {
   return (
     <div className="flex h-screen w-screen bg-gray-100">
       <div className="w-1/3 border-r border-gray-200 bg-white p-4 overflow-auto">
-        <h2 className="text-2xl font-bold mb-4">Work Calendar</h2>
+        <h2 className="text-2xl font-bold mb-4">工作日历</h2>
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -131,7 +132,7 @@ export default function Home() {
           className="rounded-md border mb-4"
         />
         <h3 className="text-lg font-semibold mb-2">
-          {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
+          {selectedDate ? format(selectedDate, 'yyyy年MM月dd日', { locale: zhCN }) : '请选择日期'}
         </h3>
         <div className="space-y-2 mb-4">
           {getDayWorkItems().map((item) => (
@@ -152,7 +153,7 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <Input
-            placeholder="Enter work item"
+            placeholder="输入工作项目"
             value={newWorkContent}
             onChange={(e) => setNewWorkContent(e.target.value)}
           />
@@ -161,7 +162,7 @@ export default function Home() {
       </div>
 
       <div className="w-1/3 border-r border-gray-200 bg-white p-4">
-        <h2 className="text-2xl font-bold mb-4">Weekly Report</h2>
+        <h2 className="text-2xl font-bold mb-4">周报</h2>
         <Textarea
           value={generateWeeklyReport()}
           readOnly
@@ -170,7 +171,7 @@ export default function Home() {
       </div>
 
       <div className="w-1/3 bg-white p-4">
-        <h2 className="text-2xl font-bold mb-4">Monthly Report</h2>
+        <h2 className="text-2xl font-bold mb-4">月报</h2>
         <Textarea
           value={generateMonthlyReport()}
           readOnly

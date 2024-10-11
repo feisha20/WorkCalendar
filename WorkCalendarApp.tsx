@@ -17,7 +17,7 @@ type WorkItem = {
 }
 
 export default function WorkCalendarApp() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date()) // 修改这里，默认为当前日期
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [workItems, setWorkItems] = useState<WorkItem[]>([])
   const [newWorkContent, setNewWorkContent] = useState('')
 
@@ -121,26 +121,26 @@ export default function WorkCalendarApp() {
   }
 
   return (
-    <div className="flex flex-row h-screen bg-gray-100 p-8 gap-8">
-      <Card className="w-1/3 shadow-lg overflow-auto">
+    <div className="flex h-screen bg-gray-100 p-8 gap-8">
+      <Card className="flex-1">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Work Calendar</CardTitle>
+          <CardTitle>Work Calendar</CardTitle>
           <CardDescription>Manage your work items</CardDescription>
         </CardHeader>
         <CardContent>
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={(date) => setSelectedDate(date || new Date())} // 确保总是有一个选中的日期
-            className="rounded-md border mb-6"
+            onSelect={(date) => setSelectedDate(date || new Date())}
+            className="rounded-md border mb-4"
           />
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-4">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">
               {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {getDayWorkItems().map((item) => (
-                <div key={item.id} className="flex items-center space-x-3">
+                <div key={item.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={item.id}
                     checked={item.completed}
@@ -156,42 +156,41 @@ export default function WorkCalendarApp() {
               ))}
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Input
               placeholder="Enter work item"
               value={newWorkContent}
               onChange={(e) => setNewWorkContent(e.target.value)}
-              className="flex-grow"
             />
-            <Button onClick={addWorkItem} className="bg-black text-white hover:bg-gray-800">Add</Button>
+            <Button onClick={addWorkItem}>Add</Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="w-1/3 shadow-lg overflow-auto">
+      <Card className="flex-1">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Weekly Report</CardTitle>
+          <CardTitle>Weekly Report</CardTitle>
           <CardDescription>Automatically generated based on your work items</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             value={generateWeeklyReport()}
             readOnly
-            className="h-[calc(100vh-250px)] resize-none p-4"
+            className="h-[calc(100vh-200px)]"
           />
         </CardContent>
       </Card>
 
-      <Card className="w-1/3 shadow-lg overflow-auto">
+      <Card className="flex-1">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Monthly Report</CardTitle>
+          <CardTitle>Monthly Report</CardTitle>
           <CardDescription>Overview of the entire month</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
             value={generateMonthlyReport()}
             readOnly
-            className="h-[calc(100vh-250px)] resize-none p-4"
+            className="h-[calc(100vh-200px)]"
           />
         </CardContent>
       </Card>

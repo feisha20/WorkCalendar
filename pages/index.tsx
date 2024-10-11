@@ -19,6 +19,67 @@ type WorkItem = {
   completed: boolean
 }
 
+// 新增: 用于渲染带有超链接的内容的组件
+const ContentWithLinks: React.FC<{ content: string }> = ({ content }) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = content.split(urlRegex);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.match(urlRegex)) {
+          return (
+            <a
+              key={index}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              {part}
+            </a>
+          );
+        }
+        return part;
+      })}
+    </>
+  );
+};
+
+// 新增: 用于渲染带有超链接的报告的组件
+const ReportWithLinks: React.FC<{ report: string }> = ({ report }) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const lines = report.split('\n');
+
+  return (
+    <>
+      {lines.map((line, index) => {
+        const parts = line.split(urlRegex);
+        return (
+          <p key={index}>
+            {parts.map((part, partIndex) => {
+              if (part.match(urlRegex)) {
+                return (
+                  <a
+                    key={partIndex}
+                    href={part}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {part}
+                  </a>
+                );
+              }
+              return part;
+            })}
+          </p>
+        );
+      })}
+    </>
+  );
+};
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [workItems, setWorkItems] = useState<WorkItem[]>([])
@@ -102,12 +163,12 @@ export default function Home() {
     const weekEnd = endOfWeek(selectedDate)
     const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
-    let report = `周报 (${format(weekStart, 'MMM d', { locale: zhCN })} - ${format(weekEnd, 'MMM d, yyyy', { locale: zhCN })})\n\n`
+    let report = `周报 (${format(weekStart, 'MM月dd日', { locale: zhCN })} - ${format(weekEnd, 'MM月dd日, yyyy', { locale: zhCN })})\n\n`
 
     daysInWeek.forEach(day => {
       const dayItems = workItems.filter(item => format(parseISO(item.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
       if (dayItems.length > 0) {
-        report += `${format(day, 'EEEE, MMM d', { locale: zhCN })}:\n`
+        report += `${format(day, 'EEEE, MM月dd日', { locale: zhCN })}:\n`
         dayItems.forEach(item => {
           report += `- [${item.completed ? '✓' : ' '}] ${item.content}\n`
         })
@@ -171,7 +232,7 @@ export default function Home() {
                 htmlFor={item.id}
                 className={`flex-grow ${item.completed ? 'line-through text-gray-500' : ''}`}
               >
-                {item.content}
+                <ContentWithLinks content={item.content} />
               </label>
               <Button
                 variant="ghost"
@@ -194,22 +255,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-1/3 border-r border-gray-200 bg-white p-4">
+      <div className="w-1/3 border-r border-gray-200 bg-white p-4 overflow-auto">
         <h2 className="text-2xl font-bold mb-4">周报</h2>
-        <Textarea
-          value={generateWeeklyReport()}
-          readOnly
-          className="w-full h-[calc(100%-3rem)] resize-none"
-        />
+        <div className="w-full h-[calc(100%-3rem)] overflow-auto">
+          <ReportWithLinks report={generateWeeklyReport()} />
+        </div>
       </div>
 
-      <div className="w-1/3 bg-white p-4">
+      <div className="w-1/3 bg-white p-4 overflow-auto">
         <h2 className="text-2xl font-bold mb-4">月报</h2>
-        <Textarea
-          value={generateMonthlyReport()}
-          readOnly
-          className="w-full h-[calc(100%-3rem)] resize-none"
-        />
+        <div className="w-full h-[calc(100%-3rem)] overflow-auto">
+          <ReportWithLinks report={generateMonthlyReport()} />
+        </div>
       </div>
     </div>
   )

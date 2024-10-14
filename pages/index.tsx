@@ -168,7 +168,7 @@ export default function Home() {
     console.log('Initializing WebSocket connection');
     fetchWorkItems();
     
-    const socket = io({
+    const socket: Socket = io({
       path: '/api/socketio',
     });
 

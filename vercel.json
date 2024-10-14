@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/socketio",
-      "dest": "/api/socketio.ts"
+      "dest": "/api/socketio"
     }
   ]
 }

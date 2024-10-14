@@ -200,6 +200,8 @@ export default function Home() {
     let socket: Socket | undefined;
     socketInitializer().then((s) => {
       socket = s;
+    }).catch((error) => {
+      console.error('Error initializing socket:', error);
     });
 
     return () => {

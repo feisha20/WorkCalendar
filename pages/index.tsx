@@ -156,6 +156,9 @@ export default function Home() {
   const [datesWithTasks, setDatesWithTasks] = useState<Date[]>([])
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const [jobs, setJobs] = useState([])
+  const [newJobTitle, setNewJobTitle] = useState('')
+  const [newJobDescription, setNewJobDescription] = useState('')
 
   useEffect(() => {
     setMounted(true)
@@ -179,6 +182,19 @@ export default function Home() {
 
     return () => {
       socket.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    const eventSource = new EventSource('/api/jobs')
+    
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      setJobs(data)
+    }
+
+    return () => {
+      eventSource.close()
     }
   }, [])
 
@@ -291,6 +307,25 @@ export default function Home() {
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
+  }
+
+  const createJob = async () => {
+    try {
+      const response = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: newJobTitle, description: newJobDescription }),
+      });
+      if (!response.ok) {
+        throw new Error('创建新任务失败');
+      }
+      setNewJobTitle('');
+      setNewJobDescription('');
+    } catch (error) {
+      console.error('创建新任务失败:', error);
+    }
   }
 
   // 如果组件还没有挂载，返回null以避免服务器端渲染差异

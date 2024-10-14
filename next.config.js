@@ -4,4 +4,16 @@ const nextConfig = {
   swcMinify: false, // 禁用 SWC 压缩
 }
 
-module.exports = nextConfig
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+          { key: 'Connection', value: 'keep-alive' },
+        ],
+      },
+    ];
+  },
+};

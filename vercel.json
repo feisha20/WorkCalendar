@@ -6,9 +6,10 @@
       "use": "@vercel/next"
     }
   ],
-  "functions": {
-    "api/socketio.ts": {
-      "maxDuration": 60
+  "routes": [
+    {
+      "src": "/api/socketio",
+      "dest": "/api/socketio.ts"
     }
-  }
+  ]
 }

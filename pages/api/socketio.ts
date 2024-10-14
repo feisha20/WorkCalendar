@@ -13,11 +13,10 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
   const io = new SocketIOServer(res.socket.server as any, {
     path: '/api/socketio',
     addTrailingSlash: false,
+    transports: ['websocket'],
     cors: {
       origin: '*',
-      methods: ['GET', 'POST'],
     },
-    transports: ['websocket', 'polling'],
   })
   res.socket.server.io = io
 

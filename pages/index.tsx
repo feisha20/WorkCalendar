@@ -9,7 +9,7 @@ import { Textarea } from '../components/ui/textarea'
 import { Checkbox } from '../components/ui/checkbox'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import io from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 import { FiTrash2, FiSun, FiMoon } from 'react-icons/fi'  // 导入删除图标
 import { useTheme } from 'next-themes'  // 导入 useTheme hook
 
@@ -170,7 +170,7 @@ export default function Home() {
     
     const socketInitializer = async () => {
       await fetch('/api/socketio')
-      const socket = io({
+      const socket: Socket = io({
         path: '/api/socketio',
       })
 
@@ -194,7 +194,7 @@ export default function Home() {
       return socket
     }
 
-    let socket: any
+    let socket: Socket | undefined
     socketInitializer().then((s) => {
       socket = s
     })

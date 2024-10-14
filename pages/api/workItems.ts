@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest } from 'next';
+import type { NextApiResponseServerIO } from '../../types/next';
 import { v4 as uuidv4 } from 'uuid';
-import { Server as SocketIOServer } from 'socket.io';
 import { createClient } from '@vercel/kv';
 
 // 初始化 KV 客户端
@@ -20,7 +20,7 @@ interface WorkItem {
 console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL)
 console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? 'Set' : 'Not set')
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponseServerIO) {
   console.log('Received request:', req.method, req.url)
   try {
     if (req.method === 'GET') {
@@ -42,9 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await kvClient.set('workItems', workItems);
       
       // 通知所有客户端更新
-      const io: SocketIOServer = (res.socket as any).server.io;
-      if (io) {
-        io.emit('workItemsUpdated', workItems);
+      if (res.socket.server.io) {
+        res.socket.server.io.emit('workItemsUpdated', workItems);
+      } else {
+        console.log('Socket.IO not initialized')
       }
       
       res.status(201).json(newItem);
@@ -60,9 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await kvClient.set('workItems', updatedItems);
       
       // 通知所有客户端更新
-      const io: SocketIOServer = (res.socket as any).server.io;
-      if (io) {
-        io.emit('workItemsUpdated', updatedItems);
+      if (res.socket.server.io) {
+        res.socket.server.io.emit('workItemsUpdated', updatedItems);
+      } else {
+        console.log('Socket.IO not initialized')
       }
       
       res.status(200).json({ message: 'Item updated successfully' });
@@ -84,9 +86,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await kvClient.set('workItems', updatedItems);
       
       // 通知所有客户端更新
-      const io: SocketIOServer = (res.socket as any).server.io;
-      if (io) {
-        io.emit('workItemsUpdated', updatedItems);
+      if (res.socket.server.io) {
+        res.socket.server.io.emit('workItemsUpdated', updatedItems);
+      } else {
+        console.log('Socket.IO not initialized')
       }
       
       res.status(200).json({ message: '任务已成功删除' });

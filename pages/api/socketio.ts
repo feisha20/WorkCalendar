@@ -13,7 +13,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
   const io = new SocketIOServer(res.socket.server as any, {
     path: '/api/socketio',
     addTrailingSlash: false,
-    transports: ['websocket', 'polling'], // 添加 polling 作为备选
+    transports: ['websocket', 'polling'],
     cors: {
       origin: '*',
       methods: ['GET', 'POST']

@@ -220,6 +220,11 @@ export default function Home() {
       setJobs(data)
     }
 
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+      eventSource.close();
+    }
+
     return () => {
       eventSource.close()
     }

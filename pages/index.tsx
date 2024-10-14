@@ -290,7 +290,7 @@ export default function Home() {
   }
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
   // 如果组件还没有挂载，返回null以避免服务器端渲染差异
@@ -302,7 +302,7 @@ export default function Home() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold dark:text-white">工作日历</h2>
           <Button onClick={toggleTheme} variant="ghost" size="icon">
-            {theme === 'light' ? <FiMoon className="h-5 w-5" /> : <FiSun className="h-5 w-5" />}
+            {theme === 'light' ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
           </Button>
         </div>
         <div className="flex justify-between items-start mb-4">
@@ -349,6 +349,7 @@ export default function Home() {
                 id={item.id}
                 checked={item.completed}
                 onCheckedChange={() => toggleWorkItemCompletion(item.id)}
+                className="border-gray-400 dark:border-white"
               />
               <label
                 htmlFor={item.id}

@@ -165,47 +165,50 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    console.log('Initializing WebSocket connection')
-    fetchWorkItems()
+    console.log('Initializing WebSocket connection');
+    fetchWorkItems();
     
     const socketInitializer = async () => {
-      await fetch('/api/socketio')
+      await fetch('/api/socketio');
       const socket: Socket = io({
         path: '/api/socketio',
-      })
+      });
 
       socket.on('connect', () => {
-        console.log('WebSocket connected')
-      })
+        console.log('WebSocket connected');
+      });
 
       socket.on('disconnect', (reason) => {
-        console.log('WebSocket disconnected:', reason)
-      })
+        console.log('WebSocket disconnected:', reason);
+      });
 
       socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
-        console.log('Received workItemsUpdated event:', updatedWorkItems)
-        setWorkItems(updatedWorkItems)
-      })
+        console.log('Received workItemsUpdated event:', updatedWorkItems);
+        setWorkItems(updatedWorkItems);
+        // 更新有工作内容的日期
+        const dates = updatedWorkItems.map((item: WorkItem) => parseISO(item.date));
+        setDatesWithTasks(dates);
+      });
 
       socket.on('connect_error', (error) => {
-        console.error('WebSocket connection error:', error)
-      })
+        console.error('WebSocket connection error:', error);
+      });
 
-      return socket
-    }
+      return socket;
+    };
 
-    let socket: Socket | undefined
+    let socket: Socket | undefined;
     socketInitializer().then((s) => {
-      socket = s
-    })
+      socket = s;
+    });
 
     return () => {
       if (socket) {
-        console.log('Disconnecting WebSocket')
-        socket.disconnect()
+        console.log('Disconnecting WebSocket');
+        socket.disconnect();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     const eventSource = new EventSource('/api/jobs')
@@ -232,19 +235,27 @@ export default function Home() {
 
   const addWorkItem = async () => {
     if (selectedDate && newWorkContent) {
-      const response = await fetch('/api/workItems', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: format(selectedDate, 'yyyy-MM-dd'),
-          content: newWorkContent,
-        }),
-      })
-      const newItem = await response.json()
-      setNewWorkContent('')
-      // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
+      try {
+        const response = await fetch('/api/workItems', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date: format(selectedDate, 'yyyy-MM-dd'),
+            content: newWorkContent,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to add work item');
+        }
+        const newItem = await response.json();
+        console.log('New work item added:', newItem);
+        setNewWorkContent('');
+        // 不需要手动更新 workItems，因为服务器会通过 WebSocket 发送更新
+      } catch (error) {
+        console.error('Error adding work item:', error);
+      }
     }
   }
 

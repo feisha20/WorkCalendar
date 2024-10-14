@@ -5,8 +5,8 @@ import { createClient } from '@vercel/kv';
 
 // 初始化 KV 客户端
 const kvClient = createClient({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
 });
 
 interface WorkItem {
@@ -21,14 +21,10 @@ console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL)
 console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? 'Set' : 'Not set')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponseServerIO) {
-  console.log('Received request:', req.method, req.url)
+  console.log('Received request:', req.method, req.url);
   try {
-    if (req.method === 'GET') {
-      console.log('Fetching work items')
-      const workItems = await kvClient.get<WorkItem[]>('workItems') || [];
-      res.status(200).json(workItems);
-    } else if (req.method === 'POST') {
-      console.log('Creating new work item')
+    if (req.method === 'POST') {
+      console.log('Creating new work item');
       const { date, content } = req.body;
       const newItem: WorkItem = {
         id: uuidv4(),
@@ -37,18 +33,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponseS
         completed: false,
       };
       
-      const workItems = await kvClient.get<WorkItem[]>('workItems') || [];
+      let workItems = await kvClient.get<WorkItem[]>('workItems') || [];
       workItems.push(newItem);
       await kvClient.set('workItems', workItems);
       
       // 通知所有客户端更新
       if (res.socket.server.io) {
+        console.log('Emitting workItemsUpdated event');
         res.socket.server.io.emit('workItemsUpdated', workItems);
       } else {
-        console.log('Socket.IO not initialized')
+        console.log('Socket.IO not initialized');
       }
       
       res.status(201).json(newItem);
+    } else if (req.method === 'GET') {
+      // 处理 GET 请求
+      console.log('Fetching work items');
+      const workItems = await kvClient.get<WorkItem[]>('workItems') || [];
+      res.status(200).json(workItems);
     } else if (req.method === 'PUT') {
       console.log('Updating work item')
       const { id } = req.query;
@@ -97,22 +99,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponseS
       res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error in workItems API:', error);
-    let errorMessage = '未知错误';
-    let errorDetails = '';
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-      errorDetails = error.stack || '';
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: errorMessage,
-      details: errorDetails
-    });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }

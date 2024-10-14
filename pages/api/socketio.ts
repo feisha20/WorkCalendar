@@ -13,20 +13,11 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
   const io = new SocketIOServer(res.socket.server as any, {
     path: '/api/socketio',
     addTrailingSlash: false,
-    transports: ['websocket'],
-    cors: {
-      origin: '*',
-    },
   })
   res.socket.server.io = io
 
   io.on('connection', (socket) => {
     console.log('New client connected:', socket.id)
-
-    socket.on('updateWorkItems', (data) => {
-      console.log('Received updateWorkItems event:', data)
-      io.emit('workItemsUpdated', data)
-    })
 
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id)

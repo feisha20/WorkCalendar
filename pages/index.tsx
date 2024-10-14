@@ -84,6 +84,8 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [workItems, setWorkItems] = useState<WorkItem[]>([])
   const [newWorkContent, setNewWorkContent] = useState('')
+  // 新增：用于存储有工作内容的日期
+  const [datesWithTasks, setDatesWithTasks] = useState<Date[]>([])
 
   useEffect(() => {
     fetchWorkItems()
@@ -110,6 +112,10 @@ export default function Home() {
     const response = await fetch('/api/workItems')
     const data = await response.json()
     setWorkItems(data)
+
+    // 更新有工作内容的日期
+    const dates = data.map((item: WorkItem) => parseISO(item.date))
+    setDatesWithTasks(dates)
   }
 
   const addWorkItem = async () => {
@@ -218,6 +224,27 @@ export default function Home() {
           selected={selectedDate}
           onSelect={(date) => setSelectedDate(date || new Date())}
           className="rounded-md border mb-4"
+          modifiers={{ hasTask: datesWithTasks }}
+          modifiersStyles={{
+            hasTask: {
+              textDecoration: 'underline',
+              fontWeight: 'bold'
+            }
+          }}
+          components={{
+            DayContent: ({ date }) => (
+              <div className="relative w-full h-full flex items-center justify-center">
+                {date.getDate()}
+                {datesWithTasks.some(taskDate => 
+                  taskDate.getDate() === date.getDate() &&
+                  taskDate.getMonth() === date.getMonth() &&
+                  taskDate.getFullYear() === date.getFullYear()
+                ) && (
+                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
+                )}
+              </div>
+            )
+          }}
         />
         <h3 className="text-lg font-semibold mb-2">
           {selectedDate ? format(selectedDate, 'yyyy年MM月dd日', { locale: zhCN }) : '请选择日期'}

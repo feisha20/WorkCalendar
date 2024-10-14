@@ -168,47 +168,31 @@ export default function Home() {
     console.log('Initializing WebSocket connection');
     fetchWorkItems();
     
-    const socketInitializer = async () => {
-      await fetch('/api/socketio');
-      const socket: Socket = io({
-        path: '/api/socketio',
-      });
+    const socket = io({
+      path: '/api/socketio',
+    });
 
-      socket.on('connect', () => {
-        console.log('WebSocket connected');
-      });
+    socket.on('connect', () => {
+      console.log('WebSocket connected');
+    });
 
-      socket.on('disconnect', (reason) => {
-        console.log('WebSocket disconnected:', reason);
-      });
+    socket.on('disconnect', (reason) => {
+      console.log('WebSocket disconnected:', reason);
+    });
 
-      socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
-        console.log('Received workItemsUpdated event:', updatedWorkItems);
-        setWorkItems(updatedWorkItems);
-        // 更新有工作内容的日期
-        const dates = updatedWorkItems.map((item: WorkItem) => parseISO(item.date));
-        setDatesWithTasks(dates);
-      });
+    socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
+      console.log('Received workItemsUpdated event:', updatedWorkItems);
+      setWorkItems(updatedWorkItems);
+      const dates = updatedWorkItems.map((item: WorkItem) => parseISO(item.date));
+      setDatesWithTasks(dates);
+    });
 
-      socket.on('connect_error', (error) => {
-        console.error('WebSocket connection error:', error);
-      });
-
-      return socket;
-    };
-
-    let socket: Socket | undefined;
-    socketInitializer().then((s) => {
-      socket = s;
-    }).catch((error) => {
-      console.error('Error initializing socket:', error);
+    socket.on('connect_error', (error) => {
+      console.error('WebSocket connection error:', error);
     });
 
     return () => {
-      if (socket) {
-        console.log('Disconnecting WebSocket');
-        socket.disconnect();
-      }
+      socket.disconnect();
     };
   }, []);
 

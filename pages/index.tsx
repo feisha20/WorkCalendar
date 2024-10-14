@@ -10,7 +10,8 @@ import { Checkbox } from '../components/ui/checkbox'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import io from 'socket.io-client'
-import { FiTrash2 } from 'react-icons/fi'  // 导入删除图标
+import { FiTrash2, FiSun, FiMoon } from 'react-icons/fi'  // 导入删除图标
+import { useTheme } from 'next-themes'  // 导入 useTheme hook
 
 type WorkItem = {
   id: string
@@ -34,7 +35,7 @@ const ContentWithLinks: React.FC<{ content: string }> = ({ content }) => {
               href={part}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-blue-500 dark:text-blue-400 hover:underline"
             >
               {part}
             </a>
@@ -65,7 +66,7 @@ const ReportWithLinks: React.FC<{ report: string }> = ({ report }) => {
                     href={part}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500 dark:text-blue-400 hover:underline"
                   >
                     {part}
                   </a>
@@ -100,10 +101,10 @@ const AnalogClock: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-32 h-32 rounded-full bg-white border-4 border-gray-200 shadow-lg relative mb-4">
+      <div className="w-32 h-32 rounded-full bg-white dark:bg-gray-700 border-4 border-gray-200 dark:border-gray-600 shadow-lg relative mb-4">
         {/* 时针 */}
         <div
-          className="absolute w-1.5 h-10 bg-black rounded-full"
+          className="absolute w-1.5 h-10 bg-black dark:bg-white rounded-full"
           style={{
             top: '50%',
             left: '50%',
@@ -113,7 +114,7 @@ const AnalogClock: React.FC = () => {
         />
         {/* 分针 */}
         <div
-          className="absolute w-1 h-14 bg-black rounded-full"
+          className="absolute w-1 h-14 bg-black dark:bg-white rounded-full"
           style={{
             top: '50%',
             left: '50%',
@@ -132,14 +133,14 @@ const AnalogClock: React.FC = () => {
           }}
         />
         {/* 中心点 */}
-        <div className="absolute w-3 h-3 bg-black rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute w-3 h-3 bg-black dark:bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
       </div>
       {/* 更新的数字时钟 */}
       <div className="flex flex-col items-center">
-        <div className="text-5xl font-bold mb-2">
+        <div className="text-5xl font-bold mb-2 dark:text-white">
           {time.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' })}
         </div>
-        <div className="text-lg">
+        <div className="text-lg dark:text-gray-300">
           {time.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })}
         </div>
       </div>
@@ -153,6 +154,12 @@ export default function Home() {
   const [newWorkContent, setNewWorkContent] = useState('')
   // 新增：用于存储有工作内容的日期
   const [datesWithTasks, setDatesWithTasks] = useState<Date[]>([])
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     fetchWorkItems()
@@ -282,10 +289,22 @@ export default function Home() {
     return workItems.filter(item => format(parseISO(item.date), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'))
   }
 
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }
+
+  // 如果组件还没有挂载，返回null以避免服务器端渲染差异
+  if (!mounted) return null
+
   return (
-    <div className="flex h-screen w-screen bg-gray-100">
-      <div className="w-1/3 border-r border-gray-200 bg-white p-4 overflow-auto">
-        <h2 className="text-2xl font-bold mb-4">工作日历</h2>
+    <div className="flex h-screen w-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white">
+      <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 overflow-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold dark:text-white">工作日历</h2>
+          <Button onClick={toggleTheme} variant="ghost" size="icon">
+            {theme === 'light' ? <FiMoon className="h-5 w-5" /> : <FiSun className="h-5 w-5" />}
+          </Button>
+        </div>
         <div className="flex justify-between items-start mb-4">
           <div className="w-1/2">
             <Calendar
@@ -333,7 +352,7 @@ export default function Home() {
               />
               <label
                 htmlFor={item.id}
-                className={`flex-grow ${item.completed ? 'line-through text-gray-500' : ''}`}
+                className={`flex-grow ${item.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}
               >
                 <ContentWithLinks content={item.content} />
               </label>
@@ -341,9 +360,9 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => deleteWorkItem(item.id)}
-                className="p-1 hover:bg-red-100"
+                className="p-1 hover:bg-red-100 dark:hover:bg-red-900"
               >
-                <FiTrash2 className="text-red-500" />
+                <FiTrash2 className="text-red-500 dark:text-red-400" />
               </Button>
             </div>
           ))}
@@ -353,21 +372,22 @@ export default function Home() {
             placeholder="输入工作项目"
             value={newWorkContent}
             onChange={(e) => setNewWorkContent(e.target.value)}
+            className="dark:bg-gray-700 dark:text-white"
           />
           <Button onClick={addWorkItem}>Add</Button>
         </div>
       </div>
 
-      <div className="w-1/3 border-r border-gray-200 bg-white p-4 overflow-auto">
-        <h2 className="text-2xl font-bold mb-4">周报</h2>
-        <div className="w-full h-[calc(100%-3rem)] overflow-auto">
+      <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 overflow-auto">
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">周报</h2>
+        <div className="w-full h-[calc(100%-3rem)] overflow-auto dark:text-gray-300">
           <ReportWithLinks report={generateWeeklyReport()} />
         </div>
       </div>
 
-      <div className="w-1/3 bg-white p-4 overflow-auto">
-        <h2 className="text-2xl font-bold mb-4">月报</h2>
-        <div className="w-full h-[calc(100%-3rem)] overflow-auto">
+      <div className="w-1/3 bg-white dark:bg-gray-800 p-4 overflow-auto">
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">月报</h2>
+        <div className="w-full h-[calc(100%-3rem)] overflow-auto dark:text-gray-300">
           <ReportWithLinks report={generateMonthlyReport()} />
         </div>
       </div>

@@ -80,6 +80,73 @@ const ReportWithLinks: React.FC<{ report: string }> = ({ report }) => {
   );
 };
 
+// 更新 AnalogClock 组件
+const AnalogClock: React.FC = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  const secondsDegrees = (time.getSeconds() / 60) * 360;
+  const minutesDegrees = ((time.getMinutes() + time.getSeconds() / 60) / 60) * 360;
+  const hoursDegrees = ((time.getHours() % 12 + time.getMinutes() / 60) / 12) * 360;
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-32 h-32 rounded-full bg-white border-4 border-gray-200 shadow-lg relative mb-4">
+        {/* 时针 */}
+        <div
+          className="absolute w-1.5 h-10 bg-black rounded-full"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: `translate(-50%, -100%) rotate(${hoursDegrees}deg)`,
+            transformOrigin: 'bottom',
+          }}
+        />
+        {/* 分针 */}
+        <div
+          className="absolute w-1 h-14 bg-black rounded-full"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: `translate(-50%, -100%) rotate(${minutesDegrees}deg)`,
+            transformOrigin: 'bottom',
+          }}
+        />
+        {/* 秒针 */}
+        <div
+          className="absolute w-0.5 h-14 bg-red-500 rounded-full"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: `translate(-50%, -100%) rotate(${secondsDegrees}deg)`,
+            transformOrigin: 'bottom',
+          }}
+        />
+        {/* 中心点 */}
+        <div className="absolute w-3 h-3 bg-black rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+      {/* 更新的数字时钟 */}
+      <div className="flex flex-col items-center">
+        <div className="text-5xl font-bold mb-2">
+          {time.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+        </div>
+        <div className="text-lg">
+          {time.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [workItems, setWorkItems] = useState<WorkItem[]>([])
@@ -219,33 +286,40 @@ export default function Home() {
     <div className="flex h-screen w-screen bg-gray-100">
       <div className="w-1/3 border-r border-gray-200 bg-white p-4 overflow-auto">
         <h2 className="text-2xl font-bold mb-4">工作日历</h2>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => setSelectedDate(date || new Date())}
-          className="rounded-md border mb-4"
-          modifiers={{ hasTask: datesWithTasks }}
-          modifiersStyles={{
-            hasTask: {
-              textDecoration: 'underline',
-              fontWeight: 'bold'
-            }
-          }}
-          components={{
-            DayContent: ({ date }) => (
-              <div className="relative w-full h-full flex items-center justify-center">
-                {date.getDate()}
-                {datesWithTasks.some(taskDate => 
-                  taskDate.getDate() === date.getDate() &&
-                  taskDate.getMonth() === date.getMonth() &&
-                  taskDate.getFullYear() === date.getFullYear()
-                ) && (
-                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
-                )}
-              </div>
-            )
-          }}
-        />
+        <div className="flex justify-between items-start mb-4">
+          <div className="w-1/2">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => setSelectedDate(date || new Date())}
+              className="rounded-md border"
+              modifiers={{ hasTask: datesWithTasks }}
+              modifiersStyles={{
+                hasTask: {
+                  textDecoration: 'underline',
+                  fontWeight: 'bold'
+                }
+              }}
+              components={{
+                DayContent: ({ date }) => (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {date.getDate()}
+                    {datesWithTasks.some(taskDate => 
+                      taskDate.getDate() === date.getDate() &&
+                      taskDate.getMonth() === date.getMonth() &&
+                      taskDate.getFullYear() === date.getFullYear()
+                    ) && (
+                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
+                    )}
+                  </div>
+                )
+              }}
+            />
+          </div>
+          <div className="w-1/2 flex justify-center items-start pt-8">
+            <AnalogClock />
+          </div>
+        </div>
         <h3 className="text-lg font-semibold mb-2">
           {selectedDate ? format(selectedDate, 'yyyy年MM月dd日', { locale: zhCN }) : '请选择日期'}
         </h3>

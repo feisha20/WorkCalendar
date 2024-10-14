@@ -165,6 +165,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    console.log('Initializing WebSocket connection')
     fetchWorkItems()
     
     // 连接 WebSocket
@@ -173,14 +174,32 @@ export default function Home() {
     })
     
     // 初始化 WebSocket
-    fetch('/api/socketio').finally(() => {
-      // 监听工作项目更新
-      socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
-        setWorkItems(updatedWorkItems)
+    fetch('/api/socketio')
+      .then(response => response.json())
+      .then(data => console.log('Socket initialization response:', data))
+      .catch(error => console.error('Error initializing socket:', error))
+      .finally(() => {
+        // 监听工作项目更新
+        socket.on('connect', () => {
+          console.log('WebSocket connected')
+        })
+
+        socket.on('disconnect', (reason) => {
+          console.log('WebSocket disconnected:', reason)
+        })
+
+        socket.on('workItemsUpdated', (updatedWorkItems: WorkItem[]) => {
+          console.log('Received workItemsUpdated event:', updatedWorkItems)
+          setWorkItems(updatedWorkItems)
+        })
+
+        socket.on('connect_error', (error) => {
+          console.error('WebSocket connection error:', error)
+        })
       })
-    })
 
     return () => {
+      console.log('Disconnecting WebSocket')
       socket.disconnect()
     }
   }, [])

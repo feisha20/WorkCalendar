@@ -16,12 +16,19 @@ interface WorkItem {
   completed: boolean;
 }
 
+// 在文件开头添加
+console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL)
+console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? 'Set' : 'Not set')
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('Received request:', req.method, req.url)
   try {
     if (req.method === 'GET') {
+      console.log('Fetching work items')
       const workItems = await kvClient.get<WorkItem[]>('workItems') || [];
       res.status(200).json(workItems);
     } else if (req.method === 'POST') {
+      console.log('Creating new work item')
       const { date, content } = req.body;
       const newItem: WorkItem = {
         id: uuidv4(),
@@ -42,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       res.status(201).json(newItem);
     } else if (req.method === 'PUT') {
+      console.log('Updating work item')
       const { id } = req.query;
       const { completed } = req.body;
       
@@ -59,6 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       res.status(200).json({ message: 'Item updated successfully' });
     } else if (req.method === 'DELETE') {
+      console.log('Deleting work item')
       const { id } = req.query;
       
       if (typeof id !== 'string') {
@@ -86,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error: unknown) {
-    console.error('Error in API route:', error);
+    console.error('Error in workItems API:', error);
     let errorMessage = '未知错误';
     let errorDetails = '';
 

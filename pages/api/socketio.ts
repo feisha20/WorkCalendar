@@ -16,8 +16,9 @@ interface NextApiResponseWithSocket extends NextApiResponse {
 }
 
 const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
+  console.log('SocketHandler called')
   if (!res.socket.server.io) {
-    console.log('Socket is initializing')
+    console.log('Initializing Socket.IO')
     const io = new SocketIOServer(res.socket.server as any, {
       path: '/api/socketio',
       addTrailingSlash: false,
@@ -29,12 +30,19 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
     res.socket.server.io = io
 
     io.on('connection', socket => {
-      console.log('New client connected')
+      console.log('New client connected:', socket.id)
 
       socket.on('updateWorkItems', (data) => {
+        console.log('Received updateWorkItems event:', data)
         socket.broadcast.emit('workItemsUpdated', data)
       })
+
+      socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id)
+      })
     })
+  } else {
+    console.log('Socket.IO already initialized')
   }
 
   res.status(200).json({ message: 'Socket server is running' })

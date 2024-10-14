@@ -3,17 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Server as SocketIOServer } from 'socket.io';
 import { createClient } from '@vercel/kv';
 
-// 打印环境变量（仅用于调试，生产环境中请删除）
-console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL);
-console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? '已设置' : '未设置');
-
 // 初始化 KV 客户端
 const kvClient = createClient({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
 });
 
-// 模拟数据存储
 interface WorkItem {
   id: string;
   date: string;

@@ -21,6 +21,10 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
     const io = new SocketIOServer(res.socket.server as any, {
       path: '/api/socketio',
       addTrailingSlash: false,
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     })
     res.socket.server.io = io
 
